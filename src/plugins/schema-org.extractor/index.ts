@@ -28,7 +28,6 @@ import {
   isOrganization,
   isPerson,
   isRecipe,
-  isRestrictedDiet,
   isSchemaOrgData,
   isThingType,
   isWebPage,
@@ -257,8 +256,6 @@ export class SchemaOrgPlugin extends ExtractorPlugin {
   }
 
   private processNonRecipeThing(obj: Thing) {
-    this.logger.debug('Processing schema thing...', obj)
-
     // Extract website info
     if (isWebSite(obj)) {
       this.websiteName = this.getSchemaTextValue(obj)
@@ -620,14 +617,14 @@ export class SchemaOrgPlugin extends ExtractorPlugin {
   }
 
   public dietaryRestrictions(): RecipeFields['dietaryRestrictions'] {
-    const restrictions = this.recipe.suitableForDiet
+    const dietaryRestrictions = this.recipe.suitableForDiet
 
-    if (!isRestrictedDiet(restrictions)) {
+    if (!dietaryRestrictions) {
       throw new SchemaOrgException('dietaryRestrictions')
     }
 
     const restrictionList = new Set<string>()
-    const list = this.schemaValueToList(restrictions)
+    const list = this.schemaValueToList(dietaryRestrictions)
 
     for (const item of list) {
       const value = item.replace(/^https?:\/\/schema\.org\//, '')

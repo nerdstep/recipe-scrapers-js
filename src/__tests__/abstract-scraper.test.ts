@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, spyOn } from 'bun:test'
 import { AbstractScraper } from '@/abstract-scraper'
 import { NotImplementedException } from '@/exceptions'
 import { Logger } from '@/logger'
+import type { RecipeFields, RecipeObject } from '@/types/recipe.interface'
 
 class DummyScraper extends AbstractScraper {
   // implement required static host
@@ -95,5 +96,106 @@ describe('AbstractScraper utility methods', () => {
       const links = scraper.links()
       expect(links).toEqual([{ href: 'http://foo.com/page', text: 'Foo' }])
     })
+  })
+})
+
+// Test subclass overriding extract, canonicalUrl, language, links, and host
+class TestScraper extends AbstractScraper {
+  static host(): string {
+    return 'hostVal'
+  }
+
+  // Provide no real HTML parsing
+  extractors = {}
+  private data: Partial<Record<keyof RecipeFields, unknown>>
+  constructor(data: Partial<Record<keyof RecipeFields, unknown>>) {
+    // html, url and options are unused because we override methods
+    super('', '', { linksEnabled: true })
+    this.data = data
+  }
+
+  // Return mocked values for every field
+  async extract<Key extends keyof RecipeFields>(
+    field: Key,
+  ): Promise<RecipeFields[Key]> {
+    return this.data[field] as RecipeFields[Key]
+  }
+
+  override canonicalUrl(): string {
+    return this.data.canonicalUrl as string
+  }
+  override language(): string {
+    return this.data.language as string
+  }
+  override links(): RecipeFields['links'] {
+    return this.data.links as RecipeFields['links']
+  }
+}
+
+describe('AbstractScraper.toObject', () => {
+  it('returns a fully serialized RecipeObject', async () => {
+    // Prepare mock values
+    const mockValues: Partial<Record<keyof RecipeFields, unknown>> = {
+      siteName: 'site',
+      author: 'auth',
+      title: 'ttl',
+      image: 'img',
+      description: 'desc',
+      yields: '4 servings',
+      totalTime: 30,
+      cookTime: 10,
+      prepTime: 20,
+      cookingMethod: 'bake',
+      ratings: 4.2,
+      ratingsCount: 100,
+      category: new Set(['cat1', 'cat2']),
+      cuisine: new Set(['cui']),
+      dietaryRestrictions: new Set(['veg']),
+      equipment: new Set(['pan']),
+      ingredients: new Set(['ing1', 'ing2']),
+      instructions: new Set(['step1', 'step2']),
+      keywords: new Set(['kw1']),
+      nutrients: new Map([['cal', '200kcal']]),
+      reviews: new Map([['rev1', 'Good']]),
+      canonicalUrl: 'http://can.url',
+      language: 'en-US',
+      links: [{ href: 'http://link', text: 'LinkText' }],
+    }
+
+    const scraper = new TestScraper(mockValues)
+    const result = await scraper.toObject()
+
+    // Basic scalar fields
+    const expectedRest = {
+      host: 'hostVal',
+      siteName: 'site',
+      author: 'auth',
+      title: 'ttl',
+      image: 'img',
+      canonicalUrl: 'http://can.url',
+      language: 'en-US',
+      links: [{ href: 'http://link', text: 'LinkText' }],
+      description: 'desc',
+      yields: '4 servings',
+      totalTime: 30,
+      cookTime: 10,
+      prepTime: 20,
+      cookingMethod: 'bake',
+      ratings: 4.2,
+      ratingsCount: 100,
+    }
+
+    expect(result).toEqual({
+      ...expectedRest,
+      category: ['cat1', 'cat2'],
+      cuisine: ['cui'],
+      dietaryRestrictions: ['veg'],
+      equipment: ['pan'],
+      ingredients: ['ing1', 'ing2'],
+      instructions: ['step1', 'step2'],
+      keywords: ['kw1'],
+      nutrients: { cal: '200kcal' },
+      reviews: { rev1: 'Good' },
+    } as RecipeObject)
   })
 })

@@ -19,7 +19,7 @@
     "test": "bun test",
     "test:coverage": "bun run test --coverage",
     "test:data": "bun scripts/test-data.ts",
-    "lint": "biome check && ts:check",
+    "lint": "biome check && bun run ts:check",
     "lint:fix": "biome check --write",
     "ts:check": "tsc --noEmit",
     "prepublishOnly": "bun run build"

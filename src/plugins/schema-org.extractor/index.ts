@@ -116,7 +116,14 @@ export class SchemaOrgPlugin extends ExtractorPlugin {
 
         if (json) {
           const data = JSON.parse(json)
-          if (isSchemaOrgData(data)) {
+
+          if (Array.isArray(data)) {
+            for (const item of data) {
+              if (isSchemaOrgData(item)) {
+                this.schemaData.push(item)
+              }
+            }
+          } else if (isSchemaOrgData(data)) {
             this.schemaData.push(data)
           }
         }
@@ -240,12 +247,12 @@ export class SchemaOrgPlugin extends ExtractorPlugin {
     }
   }
 
-  private processSchemaItem(item: Thing) {
-    if (isRecipe(item)) {
-      return this.processRecipe(item)
+  private processSchemaItem(obj: Thing) {
+    if (isRecipe(obj)) {
+      return this.processRecipe(obj)
     }
 
-    return this.processNonRecipeThing(item)
+    return this.processNonRecipeThing(obj)
   }
 
   private processRecipe(obj: SchemaRecipe) {

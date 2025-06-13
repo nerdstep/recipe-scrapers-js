@@ -20,7 +20,11 @@ export function isGraphType(obj: unknown): obj is Graph {
 }
 
 export function isBaseType(obj: unknown): obj is { '@type': string } {
-  return isPlainObject(obj) && '@type' in obj && isString(obj['@type'])
+  return (
+    isPlainObject(obj) &&
+    '@type' in obj &&
+    (isString(obj['@type']) || Array.isArray(obj['@type']))
+  )
 }
 
 export function isSchemaOrgData(obj: unknown): obj is Graph | Thing {
@@ -31,7 +35,11 @@ export function isThingType<T extends Thing>(
   obj: unknown,
   type: string,
 ): obj is Exclude<T, 'string'> {
-  return isPlainObject(obj) && '@type' in obj && obj['@type'] === type
+  if (!isBaseType(obj)) return false
+
+  const thingType = Array.isArray(obj['@type']) ? obj['@type'][0] : obj['@type']
+
+  return thingType === type
 }
 
 export function isAggregateRating(obj: unknown): obj is AggregateRating {

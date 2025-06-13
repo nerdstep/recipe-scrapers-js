@@ -45,8 +45,10 @@ describe('type-predicates', () => {
 
   describe('isBaseType', () => {
     it('returns true for object with @type string', () => {
-      const base = { '@type': 'TestType' }
-      expect(isBaseType(base)).toBe(true)
+      expect(isBaseType({ '@type': 'TestType' })).toBe(true)
+    })
+    it('returns true for object with @type array', () => {
+      expect(isBaseType({ '@type': ['TestType'] })).toBe(true)
     })
     it('returns false for missing or non-string @type', () => {
       expect(isBaseType({})).toBe(false)

@@ -57,6 +57,11 @@ function runTestSuite(host: string, htmlFiles: string[], jsonFiles: string[]) {
       expect(Scraper.host()).toBe(host)
     })
 
+    it('should have test data files', () => {
+      expect(htmlFiles.length).toBeGreaterThan(0)
+      expect(htmlFiles.length).toBe(jsonFiles.length)
+    })
+
     for (let i = 0; i < htmlFiles.length; i++) {
       const htmlFile = htmlFiles[i]
       const jsonFile = jsonFiles[i]

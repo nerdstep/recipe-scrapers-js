@@ -35,7 +35,7 @@ export class RecipeExtractor {
   ): Promise<RecipeFields[Key]> {
     let result: RecipeFields[Key] | undefined
 
-    this.logger.verbose(`Extracting field: ${field}`)
+    this.logger.debug(`Extracting field: ${field}`)
 
     // 1. Plugins in priority order
     for (const plugin of this.plugins) {
@@ -52,7 +52,6 @@ export class RecipeExtractor {
       if (isSupported && !isDefined(result)) {
         try {
           result = await plugin.extract(field)
-          //pluginLogger.verbose(`${field}: ${String(value)}`)
         } catch (err) {
           this.diagnostics.recordFailure(plugin.name, field, err)
         }
@@ -63,7 +62,7 @@ export class RecipeExtractor {
 
     // 2. Site-specific extractor
     if (extractor) {
-      this.logger.verbose(`Using site-specific extractor for: ${field}`)
+      this.logger.debug(`Using site-specific extractor for: ${field}`)
       this.logger.verbose('Current result: ', result)
 
       try {
@@ -77,7 +76,7 @@ export class RecipeExtractor {
 
     // 3. Fallback to default values
     if (!result && field in OPTIONAL_RECIPE_FIELD_DEFAULT_VALUES) {
-      this.logger.verbose(`Using default value for: ${field}`)
+      this.logger.debug(`Using default value for: ${field}`)
       result = (OPTIONAL_RECIPE_FIELD_DEFAULT_VALUES as RecipeFields)[field]
     }
 

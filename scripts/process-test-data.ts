@@ -19,6 +19,7 @@ const DEFAULT_VALUES = {
   nutrients: {},
   dietaryRestrictions: [],
   keywords: [],
+  links: [],
 }
 
 /** Convert snake_case or other keys to camelCase */

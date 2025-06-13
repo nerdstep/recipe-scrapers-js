@@ -1,7 +1,6 @@
 import path from 'node:path'
 
 const TEMP_DIR = path.resolve(import.meta.dirname, '../.temp')
-console.log(TEMP_DIR)
 
 interface GitHubTreeItem {
   path: string

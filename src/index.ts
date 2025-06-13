@@ -1,5 +1,8 @@
 import { scrapers } from './scrapers'
 
+export * from '@/types/recipe.interface'
+export * from '@/types/scraper.interface'
+
 /**
  * Extracts the host name from a URL string.
  */

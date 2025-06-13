@@ -1,5 +1,8 @@
 # Recipe Scrapers JS
 
+> **⚠️ Alpha Version**  
+> This library is currently in **alpha**, APIs and behavior may change without notice. Use at your own risk.
+
 A TypeScript/JavaScript library for scraping recipe data from various cooking websites. This is a JavaScript port inspired by the Python [recipe-scrapers](https://github.com/hhursev/recipe-scrapers) library.
 
 ## Features
@@ -145,8 +148,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - [Schema.org Recipe specification](https://schema.org/Recipe)
 - [Cheerio](https://cheerio.js.org/) for HTML parsing
 
----
-
 ## Copyright and Usage
 
-**Note**: This library is for educational and personal use. Please respect the robots.txt files and terms of service of the websites you scrape.
+_**This library is for educational and personal use. Please respect the robots.txt files and terms of service of the websites you scrape.**_

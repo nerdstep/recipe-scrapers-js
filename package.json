@@ -7,7 +7,10 @@
     "name": "Justin Williams",
     "url": "https://github.com/nerdstep"
   },
-  "repository": "nerdstep/recipe-scrapers-js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nerdstep/recipe-scrapers-js.git"
+  },
   "type": "module",
   "module": "src/index.ts",
   "main": "dist/index.js",
@@ -15,27 +18,27 @@
   "files": ["dist", "src", "README.md", "LICENSE"],
   "keywords": ["recipe", "scraper", "parser", "food", "cooking"],
   "scripts": {
-    "build": "bun build src/index.ts --outdir dist --format esm --external cheerio",
+    "build": "tsdown src/index.ts --outdir dist",
     "test": "bun test",
     "test:coverage": "bun run test --coverage",
     "test:data": "bun scripts/test-data.ts",
     "lint": "biome check && bun run ts:check",
     "lint:fix": "biome check --write",
     "ts:check": "tsc --noEmit",
-    "prepublishOnly": "bun run build"
+    "prepublishOnly": "bun run lint && bun run build"
   },
   "peerDependencies": {
     "cheerio": "^1.0.0"
   },
   "dependencies": {
     "iso8601-duration": "^2.1.2",
-    "schema-dts": "^1.1.5",
-    "type-fest": "^4.41.0"
+    "schema-dts": "^1.1.5"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
     "@types/bun": "^1.2.15",
     "cheerio": "^1.0.0",
+    "tsdown": "^0.12.7",
     "typescript": "^5.8.3"
   }
 }

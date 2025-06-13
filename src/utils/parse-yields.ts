@@ -1,5 +1,4 @@
 const SERVE_REGEX_NUMBER = /(?:\D*(?<items>\d+(?:\.\d*)?)\D*)/
-const SERVE_REGEX_NUMBER2 = /\D*(?<items>\d+(\.\d*)?)?\D*/
 
 const SERVE_REGEX_ITEMS =
   /\bsandwiches\b|\btacquitos\b|\bmakes\b|\bcups\b|\bappetizer\b|\bporzioni\b|\bcookies\b|\b(large |small )?buns\b/gi
@@ -46,74 +45,7 @@ const RECIPE_YIELD_TYPES: [string, string][] = [
  * @param value The yield string from the recipe
  * @returns The number of servings, items, dozen, batches, etc...
  */
-export function parseYields(value: string): string {
-  let yieldText = value.trim()
-
-  console.log({ yieldText })
-
-  if (!yieldText) {
-    throw new Error('Cannot extract yield information from empty string')
-  }
-
-  // Handle range formats like "4-6 servings" or "4 to 6 servings"
-  const toMatch = yieldText.match(SERVE_REGEX_TO)
-
-  if (toMatch) {
-    console.log('Found range:', toMatch[0])
-    const parts = yieldText.split(toMatch[0])
-
-    if (parts.length > 1) {
-      yieldText = parts[1]
-    }
-  }
-
-  // Find all numbers in the text
-  const allNumbers = yieldText.match(/\d+(?:\.\d+)?/g)
-  console.log('All numbers found:', allNumbers)
-
-  // Default to the last number found, or 0
-  const matched = allNumbers ? allNumbers[allNumbers.length - 1] : '0'
-  console.log('Selected number:', matched) // Debug log
-
-  const numberMatch = yieldText.match(SERVE_REGEX_NUMBER)
-  //const matched = numberMatch?.groups?.items ?? '0'
-  const yieldTextLower = yieldText.toLowerCase()
-
-  console.log({ numberMatch, matched, yieldTextLower })
-
-  let bestMatch: string | null = null
-  let bestMatchLength = 0
-
-  // Find the best matching yield type
-  for (const [singular, plural] of RECIPE_YIELD_TYPES) {
-    if (yieldTextLower.includes(singular) || yieldTextLower.includes(plural)) {
-      const matchLength = yieldTextLower.includes(singular)
-        ? singular.length
-        : plural.length
-      if (matchLength > bestMatchLength) {
-        bestMatchLength = matchLength
-        const count = Number.parseInt(matched)
-        bestMatch = `${matched} ${count === 1 ? singular : plural}`
-      }
-    }
-  }
-
-  if (bestMatch) {
-    return bestMatch
-  }
-
-  // Default handling for items vs servings
-  const count = Number.parseFloat(matched)
-  const plural = count > 1 || count === 0 ? 's' : ''
-
-  if (SERVE_REGEX_ITEMS.test(yieldText)) {
-    return `${matched} item${plural}`
-  }
-
-  return `${matched} serving${plural}`
-}
-
-export function parseYields2(element: string): string {
+export function parseYields(element: string): string {
   if (!element) throw new Error('Element is required')
 
   let serveText = element

@@ -1,0 +1,91 @@
+import { describe, expect, it } from 'bun:test'
+import path from 'node:path'
+import { AbstractScraper } from '@/abstract-scraper'
+import { LogLevel } from '@/logger'
+import { scrapers } from '@/scrapers'
+import type { RecipeObject } from '@/types/recipe.interface'
+
+const DATA_DIR = './test-data'
+
+async function getTestDataFiles() {
+  // Use Bun.glob to find all .testhtml files
+  const glob = new Bun.Glob('**/*.testhtml')
+
+  // Group files by host (directory name)
+  const hostGroups = new Map<string, { html: string[]; json: string[] }>()
+
+  for await (const file of glob.scan(DATA_DIR)) {
+    // The directory name is the host
+    const { dir } = path.parse(file)
+    const host = hostGroups.get(dir)
+    const testHtmlPath = path.join(DATA_DIR, file)
+    const testJsonPath = testHtmlPath.replace('.testhtml', '.json')
+
+    const jsonFileExists = await Bun.file(testJsonPath).exists()
+
+    if (!jsonFileExists) {
+      console.warn(
+        `Skipping ${testHtmlPath}: corresponding JSON file not found`,
+      )
+      continue
+    }
+
+    if (!host) {
+      hostGroups.set(dir, { html: [testHtmlPath], json: [testJsonPath] })
+    } else {
+      host.html.push(testHtmlPath)
+      host.json.push(testJsonPath)
+    }
+  }
+
+  return hostGroups
+}
+
+function runTestSuite(host: string, htmlFiles: string[], jsonFiles: string[]) {
+  const Scraper = scrapers[host]
+
+  describe(`Scraper: ${host}`, async () => {
+    it('should be defined', () => {
+      expect(Scraper).toBeDefined()
+    })
+
+    it('should be an instance of AbstractScraper', () => {
+      expect(new Scraper('', '')).toBeInstanceOf(AbstractScraper)
+    })
+
+    it('should have a valid host', () => {
+      expect(Scraper.host()).toBe(host)
+    })
+
+    for (let i = 0; i < htmlFiles.length; i++) {
+      const htmlFile = htmlFiles[i]
+      const jsonFile = jsonFiles[i]
+      const { base: fileName } = path.parse(htmlFile)
+      const htmlContent = await Bun.file(htmlFile).text()
+      const expectedData: RecipeObject = await Bun.file(jsonFile).json()
+
+      describe(fileName, () => {
+        it('should correctly parse the recipe', async () => {
+          const scraper = new Scraper(htmlContent, host, {
+            logLevel: LogLevel.DEBUG,
+          })
+          const data: RecipeObject = await scraper.toObject()
+
+          //scraper.diagnostics.printReport()
+
+          //expect(async () => {
+          //  data = await scraper.toObject()
+          //}).not.toThrow()
+
+          expect(data).toEqual(expectedData)
+        })
+      })
+    }
+  })
+}
+
+const testDataFiles = await getTestDataFiles()
+
+for (const [host, { html, json }] of testDataFiles) {
+  runTestSuite(host, html, json)
+}

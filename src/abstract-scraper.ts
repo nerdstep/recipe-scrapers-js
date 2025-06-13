@@ -1,0 +1,226 @@
+import * as cheerio from 'cheerio'
+import type { ExtractorPlugin } from './abstract-extractor-plugin'
+import type { PostProcessorPlugin } from './abstract-postprocessor-plugin'
+import { NotImplementedException } from './exceptions'
+import { LogLevel, Logger } from './logger'
+import { PluginManager } from './plugin-manager'
+import { OpenGraphPlugin } from './plugins/opengraph.extractor'
+import { SchemaOrgPlugin } from './plugins/schema-org.extractor'
+import { RecipeExtractor } from './recipe-extractor'
+import { ScraperDiagnostics } from './scraper-diagnostics'
+import type {
+  RecipeData,
+  RecipeFields,
+  RecipeObject,
+} from './types/recipe.interface'
+import type { ScraperOptions } from './types/scraper.interface'
+import { ingredientsToObject } from './utils/ingredients'
+
+export abstract class AbstractScraper {
+  protected readonly logger: Logger
+  protected readonly pluginManager: PluginManager
+  protected readonly recipeExtractor: RecipeExtractor
+
+  public readonly diagnostics = new ScraperDiagnostics()
+  public readonly $: cheerio.CheerioAPI
+  public recipeData: RecipeData | null = null
+
+  constructor(
+    protected readonly html: string,
+    protected readonly url: string,
+    protected readonly options: ScraperOptions = {},
+  ) {
+    const {
+      extraExtractors = [],
+      extraPostProcessors = [],
+      logLevel = LogLevel.WARN,
+    } = options
+
+    this.logger = new Logger(this.constructor.name, logLevel)
+    this.$ = cheerio.load(html)
+
+    const baseExtractors: ExtractorPlugin[] = [
+      new OpenGraphPlugin(this.$),
+      new SchemaOrgPlugin(this.$, logLevel),
+    ]
+    const basePostProcessors: PostProcessorPlugin[] = []
+
+    this.pluginManager = new PluginManager(
+      baseExtractors,
+      basePostProcessors,
+      extraExtractors,
+      extraPostProcessors,
+    )
+
+    this.recipeExtractor = new RecipeExtractor(
+      this.pluginManager.getExtractors(),
+      this.constructor.name,
+      this.diagnostics,
+      { logLevel },
+    )
+  }
+
+  /**
+   * Site-specific extractors (implemented by subclasses)
+   * Each extractor is a function that takes the previous value
+   * returned by the extractor chain (if any) and returns the field value.
+   */
+  abstract extractors: {
+    [K in keyof RecipeFields]?: (
+      prevValue: RecipeFields[K] | undefined,
+    ) => RecipeFields[K] | Promise<RecipeFields[K]>
+  }
+
+  /**
+   * Main extraction method - tries site-specific first, then plugins,
+   * then applies post-processing.
+   */
+  public async extract<Key extends keyof RecipeFields>(
+    field: Key,
+  ): Promise<RecipeFields[Key]> {
+    // 1. Extract the raw value
+    let value = await this.recipeExtractor.extract(
+      field,
+      this.extractors[field],
+    )
+
+    // 2. Apply post-processors
+    for (const processor of this.pluginManager.getPostProcessors()) {
+      if (processor.shouldProcess(field, value)) {
+        value = await processor.process(field, value)
+      }
+    }
+
+    return value
+  }
+
+  /**
+   * Static method to get the host of the scraper.
+   * This should be implemented by subclasses to return the specific host.
+   */
+  static host(): string {
+    throw new NotImplementedException('host')
+  }
+
+  /*****************************************************************************
+   * Default implementations for common fields that can be overridden
+   * by subclasses.
+   ****************************************************************************/
+
+  canonicalUrl(): RecipeFields['canonicalUrl'] {
+    const canonicalLink = this.$('link[rel="canonical"]').attr('href')
+
+    const base = new URL(
+      this.url.startsWith('http') ? this.url : `https://${this.url}`,
+    )
+
+    return canonicalLink ? new URL(canonicalLink, base).href : base.href
+  }
+
+  language(): RecipeFields['language'] {
+    const langAttr = this.$('html').attr('lang')
+
+    if (langAttr) {
+      return langAttr
+    }
+
+    // Deprecated: check for a meta http-equiv header
+    // See: https://www.w3.org/International/questions/qa-http-and-lang
+    const metaLang = this.$('meta[http-equiv="content-language"]').attr(
+      'content',
+    )
+
+    if (metaLang) {
+      return metaLang.split(',')[0]
+    }
+
+    this.logger.warn('Could not determine language')
+
+    return 'en' // Default to English if not found
+  }
+
+  links(): RecipeFields['links'] {
+    if (!this.options.linksEnabled) return []
+
+    return this.$('a[href]')
+      .map((_, el) => {
+        const href = this.$(el).attr('href')
+        if (!href?.startsWith('http')) return null
+        return { href, text: this.$(el).text().trim() }
+      })
+      .get()
+      .filter(Boolean)
+  }
+
+  /**
+   * Scrape's the recipe and caches the data.
+   */
+  public async scrape(): Promise<RecipeData> {
+    const instance = this.constructor as typeof AbstractScraper
+
+    if (this.recipeData) {
+      return this.recipeData
+    }
+
+    this.recipeData = {
+      host: instance.host(),
+      siteName: await this.extract('siteName'),
+      author: await this.extract('author'),
+      title: await this.extract('title'),
+      image: await this.extract('image'),
+      canonicalUrl: this.canonicalUrl(),
+      language: this.language(),
+      links: this.links(),
+      description: await this.extract('description'),
+      ingredients: await this.extract('ingredients'),
+      instructions: await this.extract('instructions'),
+      category: await this.extract('category'),
+      yields: await this.extract('yields'),
+      totalTime: await this.extract('totalTime'),
+      cookTime: await this.extract('cookTime'),
+      prepTime: await this.extract('prepTime'),
+      cuisine: await this.extract('cuisine'),
+      cookingMethod: await this.extract('cookingMethod'),
+      ratings: await this.extract('ratings'),
+      ratingsCount: await this.extract('ratingsCount'),
+      equipment: await this.extract('equipment'),
+      reviews: await this.extract('reviews'),
+      nutrients: await this.extract('nutrients'),
+      dietaryRestrictions: await this.extract('dietaryRestrictions'),
+      keywords: await this.extract('keywords'),
+    }
+
+    return this.recipeData
+  }
+
+  /**
+   * Converts the scraper's data into a JSON-serializable object.
+   */
+  public async toObject(): Promise<RecipeObject> {
+    const {
+      category,
+      cuisine,
+      dietaryRestrictions,
+      equipment,
+      ingredients,
+      instructions,
+      keywords,
+      nutrients,
+      reviews,
+      ...rest
+    } = await this.scrape()
+
+    return {
+      ...rest,
+      category: Array.from(category),
+      cuisine: Array.from(cuisine),
+      dietaryRestrictions: Array.from(dietaryRestrictions),
+      equipment: Array.from(equipment),
+      ingredients: ingredientsToObject(ingredients),
+      instructions: Array.from(instructions),
+      keywords: Array.from(keywords),
+      nutrients: Object.fromEntries(nutrients),
+      reviews: Object.fromEntries(reviews),
+    }
+  }
+}

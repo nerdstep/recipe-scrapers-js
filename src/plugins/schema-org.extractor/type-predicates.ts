@@ -1,4 +1,4 @@
-import { isPlainObject } from '@/utils'
+import { isPlainObject, isString } from '@/utils'
 import type {
   AggregateRating,
   HowToSection,
@@ -20,7 +20,7 @@ export function isGraphType(obj: unknown): obj is Graph {
 }
 
 export function isBaseType(obj: unknown): obj is { '@type': string } {
-  return isPlainObject(obj) && '@type' in obj
+  return isPlainObject(obj) && '@type' in obj && isString(obj['@type'])
 }
 
 export function isSchemaOrgData(obj: unknown): obj is Graph | Thing {

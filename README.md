@@ -1,5 +1,9 @@
 # Recipe Scrapers JS
 
+[![npm version](https://img.shields.io/npm/v/recipe-scrapers-js.svg?style=flat-square)](https://www.npmjs.com/package/recipe-scrapers-js)
+[![build](https://img.shields.io/github/actions/workflow/status/nerdstep/recipe-scrapers-js/ci.yml?branch=main&style=flat-square)](https://github.com/nerdstep/recipe-scrapers-js/actions)
+[![license](https://img.shields.io/npm/l/recipe-scrapers-js.svg?style=flat-square)](LICENSE)
+
 > **⚠️ Alpha Version**  
 > This library is currently in **alpha**, APIs and behavior may change without notice. Use at your own risk.
 

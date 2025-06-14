@@ -2,7 +2,7 @@ import { AbstractScraper } from '@/abstract-scraper'
 import type { RecipeFields } from '@/types/recipe.interface'
 import { groupIngredients, isList } from '@/utils/ingredients'
 
-export class NYTimesScraper extends AbstractScraper {
+export class NYTimes extends AbstractScraper {
   static host() {
     return 'cooking.nytimes.com'
   }

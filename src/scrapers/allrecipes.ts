@@ -1,6 +1,6 @@
 import { AbstractScraper } from '@/abstract-scraper'
 
-export class AllRecipesScraper extends AbstractScraper {
+export class AllRecipes extends AbstractScraper {
   static host() {
     return 'allrecipes.com'
   }

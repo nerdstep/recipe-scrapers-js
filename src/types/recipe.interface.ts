@@ -128,7 +128,7 @@ export interface RecipeData {
    * The total time (in minutes) required to complete the recipe.
    * @example 45
    */
-  totalTime: number
+  totalTime: number | null
   /**
    * The time (in minutes) to cook the recipe, excluding any time
    * to prepare the ingredients.
@@ -221,6 +221,7 @@ export type OptionalRecipeFields = Pick<
   | 'category'
   | 'cookTime'
   | 'prepTime'
+  | 'totalTime'
   | 'cuisine'
   | 'cookingMethod'
   | 'ratings'

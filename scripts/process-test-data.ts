@@ -10,6 +10,7 @@ const DEFAULT_VALUES = {
   category: [],
   cookTime: null,
   prepTime: null,
+  totalTime: null,
   cuisine: [],
   cookingMethod: null,
   ratings: 0,
@@ -107,13 +108,17 @@ async function traverse(inDir: string, outDir: string) {
   }
 }
 
-async function main() {
-  await traverse(INPUT_DIR, OUTPUT_DIR)
+async function main(host?: string) {
+  if (host) {
+    console.log(`Processing host: ${host}`)
+    await traverse(
+      path.resolve(INPUT_DIR, host),
+      path.resolve(OUTPUT_DIR, host),
+    )
+  } else {
+    console.log('Processing all hosts...')
+    await traverse(INPUT_DIR, OUTPUT_DIR)
+  }
 }
 
-//await main()
-
-await traverse(
-  path.resolve(INPUT_DIR, 'allrecipes.com'),
-  path.resolve(OUTPUT_DIR, 'allrecipes.com'),
-)
+await main('epicurious.com')

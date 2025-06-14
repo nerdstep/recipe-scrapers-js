@@ -21,4 +21,10 @@ describe('parseYields', () => {
   it('should handle range yields', () => {
     expect(parseYields('4-6 servings')).toBe('4 servings')
   })
+
+  it('should leave paranthetical information intact', () => {
+    expect(parseYields('5 cups (about 120 to 160 crackers)')).toBe(
+      '5 cups (about 120 to 160 crackers)',
+    )
+  })
 })

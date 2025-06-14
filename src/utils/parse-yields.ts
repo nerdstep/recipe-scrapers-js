@@ -78,12 +78,23 @@ export function parseYields(element: string): string {
     }
   }
 
-  if (bestMatch) return bestMatch
+  // If we found the best match (e.g. "5 cups"), append any trailing
+  // parentheses text. That way "5 cups (about 120...)" stays intact.
+  if (bestMatch) {
+    const parenMatch = serveText.match(/\(.*\)/)
+
+    if (parenMatch) {
+      // e.g. "5 cups (about 120 to 160 crackers)"
+      bestMatch += ` ${parenMatch[0]}`
+    }
+    return bestMatch
+  }
 
   const plural =
     Number.parseFloat(matched) > 1 || Number.parseFloat(matched) === 0
       ? 's'
       : ''
+
   if (SERVE_REGEX_ITEMS.test(serveText)) {
     return `${matched} item${plural}`
   }

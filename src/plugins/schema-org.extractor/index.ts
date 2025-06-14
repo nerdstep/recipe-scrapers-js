@@ -9,6 +9,7 @@ import {
   isPlainObject,
   isString,
 } from '@/utils'
+import { parseYields } from '@/utils/parse-yields'
 import { normalizeString, parseMinutes, splitToList } from '@/utils/parsing'
 import type { CheerioAPI } from 'cheerio'
 import type { AggregateRating } from 'schema-dts'
@@ -499,7 +500,7 @@ export class SchemaOrgPlugin extends ExtractorPlugin {
       throw new SchemaOrgException('yields', yields)
     }
 
-    return yields
+    return parseYields(yields)
   }
 
   public totalTime(): RecipeFields['totalTime'] {

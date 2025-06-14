@@ -13,14 +13,15 @@ export class HtmlStripperPlugin extends PostProcessorPlugin {
     'ingredients',
   ]
 
-  shouldProcess<Key extends keyof RecipeFields>(
-    field: Key,
-    _value: RecipeFields[Key],
-  ): boolean {
+  shouldProcess<Key extends keyof RecipeFields>(field: Key): boolean {
     return this.fieldsToProcess.includes(field)
   }
 
   process<T>(field: keyof RecipeFields, value: T): T {
+    if (!this.shouldProcess(field)) {
+      return value
+    }
+
     if (isString(value)) {
       return this.stripHtml(value) as T
     }

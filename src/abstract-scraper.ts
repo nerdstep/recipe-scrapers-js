@@ -4,6 +4,7 @@ import type { PostProcessorPlugin } from './abstract-postprocessor-plugin'
 import { NotImplementedException } from './exceptions'
 import { LogLevel, Logger } from './logger'
 import { PluginManager } from './plugin-manager'
+import { HtmlStripperPlugin } from './plugins/html-stripper.processor'
 import { OpenGraphPlugin } from './plugins/opengraph.extractor'
 import { SchemaOrgPlugin } from './plugins/schema-org.extractor'
 import { RecipeExtractor } from './recipe-extractor'
@@ -43,7 +44,7 @@ export abstract class AbstractScraper {
       new OpenGraphPlugin(this.$),
       new SchemaOrgPlugin(this.$, logLevel),
     ]
-    const basePostProcessors: PostProcessorPlugin[] = []
+    const basePostProcessors: PostProcessorPlugin[] = [new HtmlStripperPlugin()]
 
     this.pluginManager = new PluginManager(
       baseExtractors,
@@ -86,9 +87,7 @@ export abstract class AbstractScraper {
 
     // 2. Apply post-processors
     for (const processor of this.pluginManager.getPostProcessors()) {
-      if (processor.shouldProcess(field, value)) {
-        value = await processor.process(field, value)
-      }
+      value = await processor.process(field, value)
     }
 
     return value

@@ -7,7 +7,10 @@ export function normalizeString(str: string | null | undefined): string {
   return str?.trim().replace(/\s+/g, ' ') ?? ''
 }
 
-export function splitToList(value: string, separator: string): string[] {
+export function splitToList(
+  value: string,
+  separator: string | RegExp,
+): string[] {
   if (!value) return []
 
   const items: string[] = []

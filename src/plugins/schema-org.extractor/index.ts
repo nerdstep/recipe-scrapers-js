@@ -9,6 +9,7 @@ import {
   isPlainObject,
   isString,
 } from '@/utils'
+import { splitInstructions } from '@/utils/instructions'
 import { parseYields } from '@/utils/parse-yields'
 import { normalizeString, parseMinutes, splitToList } from '@/utils/parsing'
 import type { CheerioAPI } from 'cheerio'
@@ -142,6 +143,20 @@ export class SchemaOrgPlugin extends ExtractorPlugin {
       '[itemtype*="schema.org/Recipe"], [itemtype*="Recipe"]',
     )
 
+    function addProperty(
+      obj: Record<string, unknown>,
+      key: string,
+      value: unknown,
+    ) {
+      if (obj[key] === undefined) {
+        obj[key] = value
+      } else if (Array.isArray(obj[key])) {
+        obj[key].push(value)
+      } else {
+        obj[key] = [obj[key], value]
+      }
+    }
+
     recipeElements.each((_, el) => {
       const recipeData: Record<string, string> = { '@type': 'Recipe' }
 
@@ -154,7 +169,8 @@ export class SchemaOrgPlugin extends ExtractorPlugin {
             this.$(propEl).attr('content') || this.$(propEl).text().trim()
 
           if (prop && content) {
-            recipeData[prop] = content
+            this.logger.verbose(`Extracting microdata: ${prop} = ${content}`)
+            addProperty(recipeData, prop, content)
           }
         })
 
@@ -315,7 +331,7 @@ export class SchemaOrgPlugin extends ExtractorPlugin {
 
   private parseInstructions(value: unknown): RecipeFields['instructions'] {
     if (isString(value)) {
-      return new Set([normalizeString(value)])
+      return new Set(splitInstructions(value))
     }
 
     const instructions: unknown[] = Array.isArray(value)

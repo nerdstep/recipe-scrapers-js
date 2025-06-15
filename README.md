@@ -56,7 +56,6 @@ This library supports recipe extraction from various popular cooking websites. T
 ### Prerequisites
 
 - [Bun](https://bun.sh/) (latest version)
-- Node.js 18+ (for compatibility)
 
 ### Setup
 
@@ -67,9 +66,6 @@ cd recipe-scrapers
 
 # Install dependencies
 bun install
-
-# Fetch test data
-bun run test:data
 
 # Run tests
 bun test
@@ -82,18 +78,30 @@ bun run build
 
 - `bun run build` - Build the library for distribution
 - `bun test` - Run the test suite
-- `bun run test:coverage` - Run tests with coverage report
-- `bun run test:data` - Fetch test data from the original Python repository
-- `bun run lint` - Run linting and type checking
-- `bun run lint:fix` - Fix linting issues automatically
+- `bun test:coverage` - Run tests with coverage report
+- `bun fetch-test-data` - Fetch test data from the original Python repository
+- `bun lint` - Run linting and type checking
+- `bun lint:fix` - Fix linting issues automatically
 
 ### Adding New Scrapers
 
-1. Create a new scraper class extending `AbstractScraper`
-2. Implement the required methods for data extraction
-3. Add the scraper to the scrapers registry
-4. Write tests using the test data
-5. Update documentation as needed
+1. Fetch test data from the original Python repository
+
+    ```bash
+    bun fetch-test-data
+    ```
+
+2. Convert the data into the expected JSON format (i.e. the `RecipeObject` interface)
+
+    ```bash
+    bun process-test-data <host>
+    ```
+
+3. Create a new scraper class extending `AbstractScraper`
+4. Implement the required methods for data extraction
+5. Add the scraper to the scrapers [registry](./src/scrapers/_index.ts)
+6. Run tests to ensure the extraction works as expected
+7. Update documentation as needed
 
 ```typescript
 import { AbstractScraper } from './abstract-scraper'
@@ -139,7 +147,7 @@ The project uses test data from the original Python recipe-scrapers repository t
 bun test
 
 # Run tests with coverage
-bun run test:coverage
+bun test:coverage
 ```
 
 ## License

@@ -10,6 +10,7 @@ import {
   isString,
 } from '@/utils'
 import { splitInstructions } from '@/utils/instructions'
+import { extractRecipeMicrodata } from '@/utils/microdata'
 import { parseYields } from '@/utils/parse-yields'
 import { normalizeString, parseMinutes, splitToList } from '@/utils/parsing'
 import type { CheerioAPI } from 'cheerio'
@@ -139,45 +140,11 @@ export class SchemaOrgPlugin extends ExtractorPlugin {
    * Extracts microdata from the page.
    */
   private extractMicrodataData() {
-    const recipeElements = this.$(
-      '[itemtype*="schema.org/Recipe"], [itemtype*="Recipe"]',
-    )
+    const microdataObjects = extractRecipeMicrodata(this.$)
 
-    function addProperty(
-      obj: Record<string, unknown>,
-      key: string,
-      value: unknown,
-    ) {
-      if (obj[key] === undefined) {
-        obj[key] = value
-      } else if (Array.isArray(obj[key])) {
-        obj[key].push(value)
-      } else {
-        obj[key] = [obj[key], value]
-      }
+    for (const obj of microdataObjects) {
+      this.schemaData.push(obj as SchemaOrgData)
     }
-
-    recipeElements.each((_, el) => {
-      const recipeData: Record<string, string> = { '@type': 'Recipe' }
-
-      this.$(el)
-        .find('[itemprop]')
-        .each((_, propEl) => {
-          const prop = this.$(propEl).attr('itemprop')
-
-          const content =
-            this.$(propEl).attr('content') || this.$(propEl).text().trim()
-
-          if (prop && content) {
-            this.logger.verbose(`Extracting microdata: ${prop} = ${content}`)
-            addProperty(recipeData, prop, content)
-          }
-        })
-
-      if (Object.keys(recipeData).length > 1 && isRecipe(recipeData)) {
-        this.schemaData.push(recipeData)
-      }
-    })
   }
 
   private pickFromObject(obj: unknown, props: string[]): string | undefined {
@@ -601,7 +568,7 @@ export class SchemaOrgPlugin extends ExtractorPlugin {
       }
 
       ratingsCount =
-        this.getSchemaTextValue(ratings.ratingCount) ??
+        this.getSchemaTextValue(ratings.ratingCount) ||
         this.getSchemaTextValue(ratings.reviewCount)
     }
 

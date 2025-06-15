@@ -44,6 +44,7 @@ Reference `RecipeObject` from `src/types/recipe.interface.ts`
 ## Testing Guidelines
 
 - Use Bun for unit tests
+- Prefer `it` style test syntax
 - Place test files in `__tests__/` directory with `.test.ts` suffix
 - Test data goes in `test-data/[sitename]/` with `.testhtml` and `.json` files
 - Mock external dependencies when needed

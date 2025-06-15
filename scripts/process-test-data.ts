@@ -1,6 +1,6 @@
 import { readdir } from 'node:fs/promises'
 import path from 'node:path'
-import { isString } from '../src/utils'
+import { isPlainObject, isString } from '../src/utils'
 import { splitToList } from '../src/utils/parsing'
 
 const INPUT_DIR = path.resolve(import.meta.dir, '../.temp')
@@ -51,6 +51,36 @@ function toCamelCase(str: string) {
   return str.replace(/[_-](\w)/g, (_, v) => (v ? v.toUpperCase() : ''))
 }
 
+type IngredientGroup = { ingredients: string[]; purpose: string | null }
+
+const isIngredientGroup = (v: unknown): v is IngredientGroup =>
+  isPlainObject(v) && 'ingredients' in v && 'purpose' in v
+
+/**
+ * Converts an array of ingredient‐group objects into a plain map of
+ * purpose → ingredients. Groups without a defined or non‐empty purpose
+ * are collected under the key "Ingredients".
+ *
+ * @param input The raw ingredients value (expected shape:
+ *   Array<{ ingredients: string[]; purpose: string | null }>)
+ * @returns A Record mapping each group title to its list of ingredient strings,
+ *   or undefined if the input is not in the expected shape.
+ */
+export function groupIngredientItems(
+  input: IngredientGroup[],
+): Record<string, string[]> {
+  const result: Record<string, string[]> = {}
+
+  for (const { ingredients, purpose } of input) {
+    const title = isString(purpose) ? purpose.trim() : 'Ingredients'
+    const items = Array.isArray(ingredients) ? ingredients.filter(isString) : []
+
+    result[title] = items
+  }
+
+  return result
+}
+
 /** Read JSON, normalize keys + defaults, write to outPath */
 async function processJson(inPath: string, outPath: string) {
   let raw: string
@@ -78,11 +108,21 @@ async function processJson(inPath: string, outPath: string) {
       prop = 'instructions'
     }
 
+    if (prop === 'ingredientGroups') {
+      prop = 'ingredients'
+    }
+
     result[prop] = value
   }
 
-  // ensure certain fields are always arrays
+  if (
+    Array.isArray(result.ingredients) &&
+    result.ingredients.every(isIngredientGroup)
+  ) {
+    result.ingredients = groupIngredientItems(result.ingredients)
+  }
 
+  // ensure certain fields are always arrays
   for (const field of LIST_FIELDS) {
     const v = result[field]
 

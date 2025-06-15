@@ -2,7 +2,7 @@ import { describe, expect, it } from 'bun:test'
 import path from 'node:path'
 import { AbstractScraper } from '@/abstract-scraper'
 import { LogLevel } from '@/logger'
-import { scrapers } from '@/scrapers'
+import { scrapers } from '@/scrapers/_index'
 import type { RecipeObject } from '@/types/recipe.interface'
 
 const DATA_DIR = './test-data'

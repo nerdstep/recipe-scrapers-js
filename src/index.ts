@@ -1,4 +1,4 @@
-import { scrapers } from './scrapers'
+import { scrapers } from './scrapers/_index'
 
 export * from '@/types/recipe.interface'
 export * from '@/types/scraper.interface'

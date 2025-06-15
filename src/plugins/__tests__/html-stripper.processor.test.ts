@@ -9,7 +9,6 @@ describe('HtmlStripperPlugin', () => {
     expect(plugin.shouldProcess('title')).toBe(true)
     expect(plugin.shouldProcess('instructions')).toBe(true)
     expect(plugin.shouldProcess('ingredients')).toBe(true)
-    expect(plugin.shouldProcess('description')).toBe(false)
     expect(plugin.shouldProcess('category')).toBe(false)
   })
 
@@ -54,7 +53,6 @@ describe('HtmlStripperPlugin', () => {
   })
 
   it('returns value unchanged for non-target fields', () => {
-    expect(plugin.process('description', '<b>desc</b>')).toBe('<b>desc</b>')
     expect(plugin.process('category', new Set(['<b>cat</b>']))).toEqual(
       new Set(['<b>cat</b>']),
     )

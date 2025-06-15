@@ -74,27 +74,16 @@ export interface RecipeData {
   /**
    * The ingredients needed to make the recipe.
    *
-   * This is a list of ingredient groups, where each group can have a purpose
-   * (e.g. 'For the sauce') and a list of ingredients required for a
-   * particular aspect of the recipe.
-   *
-   * If the recipe is simply a list of ingredients without any grouping,
-   * then the this list will likely contain a single `IngredientGroup` object
-   * with a `purpose` of `null` and a list of ingredients.
-   *
-   * Each ingredient item is usually a single sentence stating an ingredient,
-   * the required amount, and any additional comments.
+   * This can be either a list of ingredients, or a map of ingredients,
+   * where each key is a group name and the value is a list of ingredients.
    * @example
-   * [
-   *   {
-   *     purpose: 'For the sauce',
-   *     ingredients: [
-   *       '2 tablespoons olive oil',
-   *       '1 onion, chopped',
-   *       // ...other ingredients
-   *     ]
-   *   }
-   * ]
+   * {
+   *   'For the sauce': [
+   *     '2 tablespoons olive oil',
+   *     '1 onion, chopped',
+   *     // ...other ingredients
+   *   ]
+   * }
    */
   ingredients: Ingredients
   /**

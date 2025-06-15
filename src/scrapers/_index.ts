@@ -1,5 +1,6 @@
 import type { AbstractScraper } from '@/abstract-scraper'
 import { AllRecipes } from './allrecipes'
+import { BBCGoodFood } from './bbcgoodfood'
 import { Epicurious } from './epicurious'
 import { NYTimes } from './nytimes'
 import { SeriousEats } from './seriouseats'
@@ -10,6 +11,7 @@ import { SimplyRecipes } from './simplyrecipes'
  */
 export const scrapers = {
   [AllRecipes.host()]: AllRecipes,
+  [BBCGoodFood.host()]: BBCGoodFood,
   [Epicurious.host()]: Epicurious,
   [SeriousEats.host()]: SeriousEats,
   [SimplyRecipes.host()]: SimplyRecipes,

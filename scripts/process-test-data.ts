@@ -1,5 +1,6 @@
-import { mkdir, readdir } from 'node:fs/promises'
+import { readdir } from 'node:fs/promises'
 import path from 'node:path'
+import { isString } from '../src/utils'
 import { splitToList } from '../src/utils/parsing'
 
 const INPUT_DIR = path.resolve(import.meta.dir, '../.temp')
@@ -21,11 +22,33 @@ const DEFAULT_VALUES = {
   dietaryRestrictions: [],
   keywords: [],
   links: [],
+} as const
+
+const LIST_FIELDS = [
+  'category',
+  'cuisine',
+  'dietaryRestrictions',
+  'equipment',
+  'ingredients',
+  'instructions',
+  'keywords',
+] as const
+
+/**
+ * Returns true if the given path exists and is a directory
+ */
+async function isDirectory(path: string): Promise<boolean> {
+  try {
+    const stat = await Bun.file(path).stat()
+    return stat.isDirectory()
+  } catch {
+    return false
+  }
 }
 
 /** Convert snake_case or other keys to camelCase */
 function toCamelCase(str: string) {
-  return str.replace(/[_-](\w)/g, (_, c) => (c ? c.toUpperCase() : ''))
+  return str.replace(/[_-](\w)/g, (_, v) => (v ? v.toUpperCase() : ''))
 }
 
 /** Read JSON, normalize keys + defaults, write to outPath */
@@ -59,19 +82,11 @@ async function processJson(inPath: string, outPath: string) {
   }
 
   // ensure certain fields are always arrays
-  const listFields = [
-    'category',
-    'cuisine',
-    'dietaryRestrictions',
-    'keywords',
-    'equipment',
-    'ingredients',
-    'instructions',
-  ]
-  for (const field of listFields) {
+
+  for (const field of LIST_FIELDS) {
     const v = result[field]
 
-    if (typeof v === 'string') {
+    if (isString(v)) {
       result[field] = splitToList(v, ',')
     }
   }
@@ -84,9 +99,6 @@ async function processJson(inPath: string, outPath: string) {
 
 /** Recursively traverse input directory, mirroring structure in output dir */
 async function traverse(inDir: string, outDir: string) {
-  // ensure output directory exists
-  await mkdir(outDir, { recursive: true })
-
   for (const entry of await readdir(inDir, { withFileTypes: true })) {
     const inPath = path.join(inDir, entry.name)
     const outPath = path.join(outDir, entry.name)
@@ -115,17 +127,26 @@ async function traverse(inDir: string, outDir: string) {
   }
 }
 
-async function main(host?: string) {
+async function main(host: string | undefined) {
   if (host) {
-    console.log(`Processing host: ${host}`)
-    await traverse(
-      path.resolve(INPUT_DIR, host),
-      path.resolve(OUTPUT_DIR, host),
-    )
+    const inDir = path.resolve(INPUT_DIR, host)
+    const outDir = path.resolve(OUTPUT_DIR, host)
+
+    if (!(await isDirectory(inDir))) {
+      console.error(`Input directory does not exist: ${inDir}`)
+      return
+    }
+
+    await traverse(inDir, outDir)
   } else {
-    console.log('Processing all hosts...')
-    await traverse(INPUT_DIR, OUTPUT_DIR)
+    console.error('Usage: bun process-test-data <host>')
   }
 }
 
-await main('simplyrecipes.com')
+/**
+ * Read first CLI arg as host
+ * (e.g. `bun process-test-data allrecipes.com`)
+ */
+const [, , host] = process.argv
+
+await main(host)

@@ -72,16 +72,9 @@ function runTestSuite(host: string, htmlFiles: string[], jsonFiles: string[]) {
       describe(fileName, () => {
         it('should correctly parse the recipe', async () => {
           const scraper = new Scraper(htmlContent, host, {
-            logLevel: LogLevel.DEBUG,
+            logLevel: LogLevel.WARN,
           })
           const data: RecipeObject = await scraper.toObject()
-
-          //scraper.diagnostics.printReport()
-
-          //expect(async () => {
-          //  data = await scraper.toObject()
-          //}).not.toThrow()
-
           expect(data).toEqual(expectedData)
         })
       })
@@ -91,6 +84,11 @@ function runTestSuite(host: string, htmlFiles: string[], jsonFiles: string[]) {
 
 const testDataFiles = await getTestDataFiles()
 
+const onlyScraper = '' //'epicurious.com'
+
+console.log(`Running tests for scraper: ${onlyScraper || 'all'}`)
+
 for (const [host, { html, json }] of testDataFiles) {
+  if (onlyScraper && host !== onlyScraper) continue
   runTestSuite(host, html, json)
 }

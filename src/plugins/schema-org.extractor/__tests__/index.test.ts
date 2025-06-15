@@ -66,7 +66,7 @@ describe('SchemaOrgPlugin', () => {
     expect(plugin.extract('totalTime')).toBe(10)
     expect(plugin.extract('cookTime')).toBe(5)
     expect(plugin.extract('prepTime')).toBe(5)
-    expect(plugin.extract('yields')).toBe('4')
+    expect(plugin.extract('yields')).toBe('4 servings')
   })
 
   it('extracts ingredient and instruction lists', () => {

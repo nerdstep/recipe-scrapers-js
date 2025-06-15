@@ -9,6 +9,7 @@ export class HtmlStripperPlugin extends PostProcessorPlugin {
 
   private fieldsToProcess: (keyof RecipeFields)[] = [
     'title',
+    'description',
     'instructions',
     'ingredients',
   ]
@@ -71,6 +72,7 @@ export class HtmlStripperPlugin extends PostProcessorPlugin {
       .replace(/&lt;/g, '<')
       .replace(/&gt;/g, '>')
       .replace(/&quot;/g, '"')
+      .replace(/&#34;/g, '"')
       .replace(/&#39;/g, "'")
       .trim()
   }

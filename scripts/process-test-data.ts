@@ -95,6 +95,13 @@ async function traverse(inDir: string, outDir: string) {
     if (entry.isDirectory()) {
       await traverse(inPath, outPath)
     } else if (entry.isFile()) {
+      const exists = await Bun.file(outPath).exists()
+
+      if (exists) {
+        console.log(`Skipped:   ${relativePath} (already exists)`)
+        continue
+      }
+
       if (entry.name.endsWith('.json')) {
         await processJson(inPath, outPath)
         console.log(`Processed: ${relativePath}`)
@@ -121,4 +128,4 @@ async function main(host?: string) {
   }
 }
 
-await main('epicurious.com')
+await main('simplyrecipes.com')

@@ -43,8 +43,7 @@ async function fetchGitHubTree(
 async function downloadFile(url: string, localPath: string) {
   try {
     // Check if file already exists
-    const file = Bun.file(localPath)
-    const exists = await file.exists()
+    const exists = await Bun.file(localPath).exists()
 
     if (exists) {
       return { path: localPath, success: true, skipped: true }

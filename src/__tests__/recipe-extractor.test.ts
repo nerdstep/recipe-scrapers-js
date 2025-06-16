@@ -1,21 +1,12 @@
-import { beforeEach, describe, expect, it, spyOn } from 'bun:test'
+import { describe, expect, it, spyOn } from 'bun:test'
 import { load } from 'cheerio'
 import type { ExtractorPlugin } from '../abstract-extractor-plugin'
 import { ExtractorNotFoundException } from '../exceptions'
 import { RecipeExtractor } from '../recipe-extractor'
-import type { ScraperDiagnostics } from '../scraper-diagnostics'
 import type { RecipeFields } from '../types/recipe.interface'
 
 describe('RecipeExtractor', () => {
   const scraperName = 'TestScraper'
-  let diagnostics: ScraperDiagnostics
-
-  beforeEach(() => {
-    diagnostics = {
-      recordFailure: () => {},
-      recordSuccess: () => {},
-    } as unknown as ScraperDiagnostics
-  })
 
   it('uses a single plugin to extract a field', async () => {
     const pluginA = {
@@ -26,7 +17,7 @@ describe('RecipeExtractor', () => {
       extract: async (_: keyof RecipeFields) => 'PluginA-Name',
     } as ExtractorPlugin
 
-    const extractor = new RecipeExtractor([pluginA], scraperName, diagnostics)
+    const extractor = new RecipeExtractor([pluginA], scraperName)
     const result = await extractor.extract('title')
     expect(result).toBe('PluginA-Name')
   })
@@ -51,37 +42,11 @@ describe('RecipeExtractor', () => {
     const spyLow = spyOn(low, 'extract')
     const spyHigh = spyOn(high, 'extract')
 
-    const extractor = new RecipeExtractor([low, high], scraperName, diagnostics)
+    const extractor = new RecipeExtractor([low, high], scraperName)
     const result = await extractor.extract('title')
     expect(result).toBe('H1')
     expect(spyHigh).toHaveBeenCalled()
     expect(spyLow).not.toHaveBeenCalled()
-  })
-
-  it('records plugin failures and continues to next plugin', async () => {
-    const err = new Error('fail1')
-    const bad = {
-      name: 'Bad',
-      priority: 50,
-      $: load('<html><body></body></html>'),
-      supports: () => true,
-      extract: () => {
-        throw err
-      },
-    } as ExtractorPlugin
-    const good = {
-      name: 'Good',
-      priority: 10,
-      $: load('<html><body></body></html>'),
-      supports: () => true,
-      extract: () => 'GoodValue',
-    } as ExtractorPlugin
-
-    const spyFailure = spyOn(diagnostics, 'recordFailure')
-    const extractor = new RecipeExtractor([bad, good], scraperName, diagnostics)
-    const result = await extractor.extract('title')
-    expect(result).toBe('GoodValue')
-    expect(spyFailure).toHaveBeenCalledWith('Bad', 'title', err)
   })
 
   it('uses site-specific extractor when provided', async () => {
@@ -93,7 +58,7 @@ describe('RecipeExtractor', () => {
       extract: () => 'X',
     } as ExtractorPlugin
 
-    const extractor = new RecipeExtractor([plugin], scraperName, diagnostics)
+    const extractor = new RecipeExtractor([plugin], scraperName)
     const siteValue = await extractor.extract('title', (prev) => {
       expect(prev).toBeUndefined()
       return 'SiteName'
@@ -110,7 +75,7 @@ describe('RecipeExtractor', () => {
       extract: () => 'FromPlugin',
     } as ExtractorPlugin
 
-    const extractor = new RecipeExtractor([plugin], scraperName, diagnostics)
+    const extractor = new RecipeExtractor([plugin], scraperName)
     const final = await extractor.extract('title', (prev) => {
       expect(prev).toBe('FromPlugin')
       return `${prev}-Site`
@@ -127,7 +92,7 @@ describe('RecipeExtractor', () => {
       extract: () => 'X',
     } as ExtractorPlugin
 
-    const extractor = new RecipeExtractor([plugin], scraperName, diagnostics)
+    const extractor = new RecipeExtractor([plugin], scraperName)
     await expect(extractor.extract('title')).rejects.toThrow(
       ExtractorNotFoundException,
     )

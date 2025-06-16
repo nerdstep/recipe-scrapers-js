@@ -1,10 +1,13 @@
 import { ExtractorPlugin } from '../abstract-extractor-plugin'
-import { UnsupportedFieldException } from '../exceptions'
+import {
+  ExtractionFailedException,
+  ExtractorNotFoundException,
+} from '../exceptions'
 import type { RecipeFields } from '../types/recipe.interface'
 
-export class OpenGraphException extends Error {
+export class OpenGraphException extends ExtractionFailedException {
   constructor(name: string) {
-    super(`OpenGraph metadata not found: ${name}`)
+    super(name)
     this.name = 'OpenGraphException'
   }
 }
@@ -28,7 +31,7 @@ export class OpenGraphPlugin extends ExtractorPlugin {
     const extractor = this.extractors[field]
 
     if (!extractor) {
-      throw new UnsupportedFieldException(field)
+      throw new ExtractorNotFoundException(field)
     }
 
     return extractor()

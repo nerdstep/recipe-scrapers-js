@@ -8,7 +8,6 @@ import { HtmlStripperPlugin } from './plugins/html-stripper.processor'
 import { OpenGraphPlugin } from './plugins/opengraph.extractor'
 import { SchemaOrgPlugin } from './plugins/schema-org.extractor'
 import { RecipeExtractor } from './recipe-extractor'
-import { ScraperDiagnostics } from './scraper-diagnostics'
 import type {
   RecipeData,
   RecipeFields,
@@ -22,7 +21,6 @@ export abstract class AbstractScraper {
   protected readonly pluginManager: PluginManager
   protected readonly recipeExtractor: RecipeExtractor
 
-  public readonly diagnostics = new ScraperDiagnostics()
   public readonly $: cheerio.CheerioAPI
   public recipeData: RecipeData | null = null
 
@@ -56,7 +54,6 @@ export abstract class AbstractScraper {
     this.recipeExtractor = new RecipeExtractor(
       this.pluginManager.getExtractors(),
       this.constructor.name,
-      this.diagnostics,
       { logLevel },
     )
   }

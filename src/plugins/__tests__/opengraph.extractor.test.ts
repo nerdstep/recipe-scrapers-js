@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'bun:test'
-import { UnsupportedFieldException } from '@/exceptions'
+import { ExtractorNotFoundException } from '@/exceptions'
 import type { RecipeFields } from '@/types/recipe.interface'
 import { load } from 'cheerio'
 import { OpenGraphException, OpenGraphPlugin } from '../opengraph.extractor'
@@ -72,9 +72,7 @@ describe('OpenGraphPlugin', () => {
         plugin.extract('siteName')
       } catch (err) {
         expect(err).toBeInstanceOf(OpenGraphException)
-        expect((err as Error).message).toBe(
-          'OpenGraph metadata not found: siteName',
-        )
+        expect((err as Error).message).toBe('No value found for "siteName"')
         expect((err as Error).name).toBe('OpenGraphException')
       }
     })
@@ -86,23 +84,21 @@ describe('OpenGraphPlugin', () => {
         plugin.extract('image')
       } catch (err) {
         expect(err).toBeInstanceOf(OpenGraphException)
-        expect((err as Error).message).toBe(
-          'OpenGraph metadata not found: image',
-        )
+        expect((err as Error).message).toBe('No value found for "image"')
       }
     })
 
-    it('throws UnsupportedFieldException for unsupported field', () => {
+    it('throws ExtractorNotFoundException for unsupported field', () => {
       plugin = new OpenGraphPlugin(load(htmlWithMeta))
       expect(() => plugin.extract('name' as keyof RecipeFields)).toThrow(
-        UnsupportedFieldException,
+        ExtractorNotFoundException,
       )
       try {
         plugin.extract('name' as keyof RecipeFields)
       } catch (err) {
-        expect(err).toBeInstanceOf(UnsupportedFieldException)
+        expect(err).toBeInstanceOf(ExtractorNotFoundException)
         expect((err as Error).message).toBe(
-          'Extraction not supported for field: name',
+          'No extractor found for field: name',
         )
       }
     })

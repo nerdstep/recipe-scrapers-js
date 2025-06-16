@@ -1,14 +1,11 @@
 import { ExtractorPlugin } from '@/abstract-extractor-plugin'
-import { UnsupportedFieldException } from '@/exceptions'
+import {
+  ExtractionFailedException,
+  UnsupportedFieldException,
+} from '@/exceptions'
 import { type LogLevel, Logger } from '@/logger'
 import type { RecipeFields } from '@/types/recipe.interface'
-import {
-  isDefined,
-  isFunction,
-  isNumber,
-  isPlainObject,
-  isString,
-} from '@/utils'
+import { isFunction, isNumber, isPlainObject, isString } from '@/utils'
 import { splitInstructions } from '@/utils/instructions'
 import { extractRecipeMicrodata } from '@/utils/microdata'
 import { parseYields } from '@/utils/parse-yields'
@@ -37,13 +34,9 @@ import {
   isWebSite,
 } from './type-predicates'
 
-class SchemaOrgException extends Error {
+export class SchemaOrgException extends ExtractionFailedException {
   constructor(field: string, value?: unknown) {
-    const msg = isDefined(value)
-      ? `Invalid value for "${field}": ${String(value)}`
-      : `Missing required field: ${field}`
-
-    super(msg)
+    super(field, value)
     this.name = 'SchemaOrgException'
   }
 }

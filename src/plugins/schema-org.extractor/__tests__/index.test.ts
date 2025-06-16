@@ -1,9 +1,12 @@
 import { describe, expect, it } from 'bun:test'
-import { UnsupportedFieldException } from '@/exceptions'
+import {
+  ExtractionFailedException,
+  UnsupportedFieldException,
+} from '@/exceptions'
 import type { RecipeFields } from '@/types/recipe.interface'
 import { isList } from '@/utils/ingredients'
 import { load } from 'cheerio'
-import { SchemaOrgPlugin } from '../index'
+import { SchemaOrgException, SchemaOrgPlugin } from '../index'
 
 const minimalJsonLd = `
 <script type="application/ld+json">
@@ -37,6 +40,15 @@ const minimalJsonLd = `
   ]
 }
 </script>`
+
+describe('SchemaOrgException', () => {
+  it('should throw an error with the correct message', () => {
+    const error = new SchemaOrgException('title', null)
+    expect(error).toBeInstanceOf(ExtractionFailedException)
+    expect(error.name).toBe('SchemaOrgException')
+    expect(error.message).toBe('Invalid value for "title": null')
+  })
+})
 
 describe('SchemaOrgPlugin', () => {
   const $ = load(minimalJsonLd)
@@ -110,7 +122,7 @@ describe('SchemaOrgPlugin', () => {
     const badJson = `<script type="application/ld+json">{"@type":"Recipe"}</script>`
     const badPlugin = new SchemaOrgPlugin(load(badJson))
     expect(() => badPlugin.extract('title')).toThrow(
-      /Missing required field: title/,
+      'No value found for "title"',
     )
   })
 
@@ -118,7 +130,7 @@ describe('SchemaOrgPlugin', () => {
     const badImgJson = `<script type="application/ld+json">{"@type":"Recipe","image":"nope"}</script>`
     const badPlugin = new SchemaOrgPlugin(load(badImgJson))
     expect(() => badPlugin.extract('image')).toThrow(
-      /Invalid value for "image": nope/,
+      'Invalid value for "image": nope',
     )
   })
 })

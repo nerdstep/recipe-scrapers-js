@@ -1,8 +1,10 @@
 import type { ExtractorPlugin } from './abstract-extractor-plugin'
 import { OPTIONAL_RECIPE_FIELD_DEFAULT_VALUES } from './constants'
-import { ExtractorNotFoundException } from './exceptions'
+import {
+  ExtractionFailedException,
+  ExtractorNotFoundException,
+} from './exceptions'
 import { type LogLevel, Logger } from './logger'
-import type { ScraperDiagnostics } from './scraper-diagnostics'
 import type { RecipeFields } from './types/recipe.interface'
 import { isDefined } from './utils'
 
@@ -12,7 +14,6 @@ export class RecipeExtractor {
   constructor(
     private plugins: ExtractorPlugin[],
     private readonly scraperName: string,
-    private readonly diagnostics: ScraperDiagnostics,
     private readonly options: { logLevel?: LogLevel } = {},
   ) {
     this.logger = new Logger(this.getContext(), this.options.logLevel)
@@ -53,7 +54,11 @@ export class RecipeExtractor {
         try {
           result = await plugin.extract(field)
         } catch (err) {
-          this.diagnostics.recordFailure(plugin.name, field, err)
+          if (err instanceof ExtractionFailedException) {
+            pluginLogger.verbose(err.message)
+          } else {
+            pluginLogger.error(err)
+          }
         }
       } else {
         pluginLogger.verbose(`Field is not supported: ${field}`)
@@ -70,7 +75,6 @@ export class RecipeExtractor {
         this.logger.verbose(`Site result for ${field}: `, result)
       } catch (err) {
         this.logger.error(err)
-        this.diagnostics.recordFailure(this.scraperName, field, err)
       }
     }
 

@@ -1,7 +1,9 @@
 import { readdir } from 'node:fs/promises'
 import path from 'node:path'
+import type { RecipeFields } from '../src/types/recipe.interface'
 import { isPlainObject, isString } from '../src/utils'
-import { splitToList } from '../src/utils/parsing'
+import { removeInstructionHeading } from '../src/utils/instructions'
+import { normalizeString, splitToList } from '../src/utils/parsing'
 
 const INPUT_DIR = path.resolve(import.meta.dir, '../.temp')
 const OUTPUT_DIR = path.resolve(import.meta.dir, '../test-data')
@@ -33,6 +35,25 @@ const LIST_FIELDS = [
   'instructions',
   'keywords',
 ] as const
+
+// Per-site overrides for known bad data
+// These are keyed by hostname, then by the JSON file name without extension
+const OVERRIDE_VALUES = {
+  'cooking.nytimes.com': {
+    nytimes: {
+      yields: '5 cups (about 120 to 160 crackers)',
+    },
+  },
+  'epicurious.com': {
+    epicurious: {
+      canonicalUrl:
+        'https://www.epicurious.com/recipes/food/views/ramen-noodle-bowl-with-escarole-and-spicy-tofu-crumbles',
+    },
+  },
+} as const satisfies Record<
+  string,
+  Record<string, Partial<Record<keyof RecipeFields, unknown>>>
+>
 
 /**
  * Returns true if the given path exists and is a directory
@@ -73,7 +94,9 @@ export function groupIngredientItems(
 
   for (const { ingredients, purpose } of input) {
     const title = isString(purpose) ? purpose.trim() : 'Ingredients'
-    const items = Array.isArray(ingredients) ? ingredients.filter(isString) : []
+    const items = Array.isArray(ingredients)
+      ? ingredients.filter(isString).map(normalizeString)
+      : []
 
     result[title] = items
   }
@@ -81,21 +104,13 @@ export function groupIngredientItems(
   return result
 }
 
-/** Read JSON, normalize keys + defaults, write to outPath */
-async function processJson(inPath: string, outPath: string) {
-  let raw: string
-  let data: Record<string, unknown>
-
-  try {
-    raw = await Bun.file(inPath).text()
-    data = JSON.parse(raw)
-  } catch {
-    console.error(`Skipping invalid JSON: ${inPath}`)
-    return
-  }
-
+function normalizeData(
+  host: string,
+  filename: string,
+  data: Record<string, unknown>,
+) {
   // start with default values
-  const result: Record<string, unknown> = {
+  let result: Record<string, unknown> = {
     ...DEFAULT_VALUES,
   }
 
@@ -115,14 +130,23 @@ async function processJson(inPath: string, outPath: string) {
     result[prop] = value
   }
 
-  if (
-    Array.isArray(result.ingredients) &&
-    result.ingredients.every(isIngredientGroup)
-  ) {
-    result.ingredients = groupIngredientItems(result.ingredients)
+  // Clean instructions
+  if (Array.isArray(result.instructions)) {
+    result.instructions = result.instructions
+      .map(removeInstructionHeading)
+      .filter(Boolean)
   }
 
-  // ensure certain fields are always arrays
+  // Clean & group ingredients
+  if (Array.isArray(result.ingredients)) {
+    if (result.ingredients.every(isIngredientGroup)) {
+      result.ingredients = groupIngredientItems(result.ingredients)
+    } else {
+      result.ingredients = result.ingredients.map(normalizeString)
+    }
+  }
+
+  // Ensure certain fields are always arrays
   for (const field of LIST_FIELDS) {
     const v = result[field]
 
@@ -131,21 +155,47 @@ async function processJson(inPath: string, outPath: string) {
     }
   }
 
-  const output = result
+  // Apply per-site overrides
+  const overrides = OVERRIDE_VALUES[host]?.[filename]
+
+  if (overrides) {
+    result = { ...result, ...overrides }
+  }
+
+  return result
+}
+
+/**
+ * Read JSON, normalize data, write to outPath
+ */
+async function processJson(host: string, inPath: string, outPath: string) {
+  let raw: string
+  let data: Record<string, unknown>
+
+  try {
+    raw = await Bun.file(inPath).text()
+    data = JSON.parse(raw)
+  } catch {
+    console.error(`Skipping invalid JSON: ${inPath}`)
+    return
+  }
+
+  const filename = path.basename(inPath, '.json')
+  const output = normalizeData(host, filename, data)
   const content = JSON.stringify(output, null, 2)
 
   await Bun.write(outPath, content)
 }
 
 /** Recursively traverse input directory, mirroring structure in output dir */
-async function traverse(inDir: string, outDir: string) {
+async function traverse(host: string, inDir: string, outDir: string) {
   for (const entry of await readdir(inDir, { withFileTypes: true })) {
     const inPath = path.join(inDir, entry.name)
     const outPath = path.join(outDir, entry.name)
     const relativePath = outPath.substring(OUTPUT_DIR.length + 1)
 
     if (entry.isDirectory()) {
-      await traverse(inPath, outPath)
+      await traverse(host, inPath, outPath)
     } else if (entry.isFile()) {
       const exists = await Bun.file(outPath).exists()
 
@@ -155,7 +205,7 @@ async function traverse(inDir: string, outDir: string) {
       }
 
       if (entry.name.endsWith('.json')) {
-        await processJson(inPath, outPath)
+        await processJson(host, inPath, outPath)
         console.log(`Processed: ${relativePath}`)
       } else {
         // copy non-JSON files unchanged
@@ -177,7 +227,7 @@ async function main(host: string | undefined) {
       return
     }
 
-    await traverse(inDir, outDir)
+    await traverse(host, inDir, outDir)
   } else {
     console.error('Usage: bun process-test-data <host>')
   }

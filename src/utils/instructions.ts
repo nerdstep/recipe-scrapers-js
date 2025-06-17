@@ -14,7 +14,7 @@ const INSTRUCTION_HEADINGS = [
 /**
  * Removes any heading from the start of the instructions string.
  */
-function removeInstructionHeading(value: string) {
+export function removeInstructionHeading(value: string) {
   for (const heading of INSTRUCTION_HEADINGS) {
     const regex = new RegExp(`^\\s*${heading}\\s*:?\\s*`, 'i')
     if (regex.test(value)) {

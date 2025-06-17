@@ -23,6 +23,8 @@ recipe-scrapers-js/
 ## TypeScript Rules
 
 ### Strict Type Safety
+
+- **Never use non-null assertions (!)**
 - **Never use `any`** - Use proper types, unions, or `unknown` instead
 - **Avoid type casting** unless absolutely necessary and safe
 - Use **type guards** for runtime type checking instead of casting

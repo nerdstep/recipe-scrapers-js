@@ -4,7 +4,14 @@
 import { parse as parseDuration, toSeconds } from 'iso8601-duration'
 
 export function normalizeString(str: string | null | undefined): string {
-  return str?.trim().replace(/\s+/g, ' ') ?? ''
+  return (
+    str
+      ?.trim()
+      // collapse all whitespace to single spaces
+      .replace(/\s+/g, ' ')
+      // remove any space(s) immediately before a comma
+      .replace(/\s+,/g, ',') ?? ''
+  )
 }
 
 export function splitToList(

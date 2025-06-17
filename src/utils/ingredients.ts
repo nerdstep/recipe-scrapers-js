@@ -177,35 +177,34 @@ export function groupIngredients(
   const groupings = new Map<string, Set<string>>()
   let currentHeading: string | null = null
 
+  // iterate in document order over headings & items
   const elements = $(`${groupNameSelector}, ${ingredientSelector}`).toArray()
 
   for (const el of elements) {
     const $el = $(el)
-    const parent = $el.parent()
-    const headingElements = parent.find(groupNameSelector).toArray()
-    const isHeading = headingElements.some((headingEl) => headingEl === el)
 
-    if (isHeading) {
-      currentHeading = normalizeString($el.text()) || DEFAULT_GROUP_NAME
+    if ($el.is(groupNameSelector)) {
+      // it's a heading
+      const headingText = normalizeString($el.text())
+      currentHeading = headingText || DEFAULT_GROUP_NAME
 
       if (!groupings.has(currentHeading)) {
         groupings.set(currentHeading, new Set())
       }
-    } else {
+    } else if ($el.is(ingredientSelector)) {
+      // it's an ingredient
       const text = normalizeString($el.text())
-      const matched = bestMatch(text, ingredients)
 
+      if (!text) continue
+
+      const matched = bestMatch(text, ingredients)
       const heading = currentHeading || DEFAULT_GROUP_NAME
 
       if (!groupings.has(heading)) {
         groupings.set(heading, new Set())
       }
 
-      const currentGroup = groupings.get(heading)
-
-      if (currentGroup) {
-        currentGroup.add(matched)
-      }
+      groupings.get(heading)?.add(matched)
     }
   }
 

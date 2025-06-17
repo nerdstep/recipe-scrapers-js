@@ -407,4 +407,33 @@ describe('groupIngredients', () => {
       expect(defaultGroup.size).toBe(2)
     }
   })
+
+  it('should handle grouping under both a default heading and a found heading', () => {
+    const html = `
+      <div class="ingredients">
+        <h2>Ingredients</h2>
+        <ul>
+          <li>ingredient 1</li>
+        </ul>
+        <h3>Heading</h3>
+        <ul>
+          <li>ingredient 2</li>
+        </ul>
+      </div>
+    `
+
+    const $ = cheerio.load(html)
+    const ingredientsList = new Set(['ingredient 1', 'ingredient 2'])
+    const groupedResult = groupIngredients(
+      $,
+      ingredientsList,
+      '.ingredients h3',
+      '.ingredients li',
+    )
+
+    expect(ingredientsToObject(groupedResult)).toEqual({
+      Ingredients: ['ingredient 1'],
+      Heading: ['ingredient 2'],
+    })
+  })
 })

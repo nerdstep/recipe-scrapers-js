@@ -37,14 +37,50 @@ bun add recipe-scrapers-js
 import { getScraper } from 'recipe-scrapers-js'
 
 const html = `<html>The html to scrape...</html>`
+const url = 'https://allrecipes.com/recipe/example'
 
 // Get a scraper for a specific URL
 // This function will throw if a scraper does not exist.
-const scraper = getScraper(html, 'https://allrecipes.com/recipe/example')
-
+const MyScraper = getScraper(url)
+const scraper = new MyScraper(html, url, /* { ...options } */)
 const recipe = await scraper.toObject()
-  
+
 console.log(recipe)
+```
+
+### Options
+
+```typescript
+interface ScraperOptions {
+  /**
+   * Additional extractors to be used by the scraper.
+   * These extractors will be added to the default set of extractors.
+   * Extractors are applied according to their priority.
+   * Higher priority extractors will run first.
+   * @default []
+   */
+  extraExtractors?: ExtractorPlugin[]
+  /**
+   * Additional post-processors to be used by the scraper.
+   * These post-processors will be added to the default set of post-processors.
+   * Post-processors are applied after all extractors have run.
+   * Post-processors are also applied according to their priority.
+   * Higher priority post-processors will run first.
+   * @default []
+   */
+  extraPostProcessors?: PostProcessorPlugin[]
+  /**
+   * Whether link scraping is enabled.
+   * @default false
+   */
+  linksEnabled?: boolean
+  /**
+   * Logging level for the scraper.
+   * This controls the verbosity of logs produced by the scraper.
+   * @default LogLevel.Warn
+   */
+  logLevel?: LogLevel
+}
 ```
 
 ## Supported Sites

@@ -1,29 +1,21 @@
 import { scrapers } from './scrapers/_index'
+import { getHostName } from './utils'
 
 export * from '@/types/recipe.interface'
 export * from '@/types/scraper.interface'
+export * from './abstract-extractor-plugin'
+export * from './abstract-postprocessor-plugin'
+export * from './logger'
+export { scrapers }
 
 /**
- * Extracts the host name from a URL string.
+ * Returns a scraper class for the given URL, if implemented.
  */
-function getHostName(urlString: string) {
-  try {
-    const url = new URL(urlString)
-    return url.host
-  } catch {
-    throw new Error(`Invalid URL: ${urlString}`)
-  }
-}
-
-/**
- * Returns a scraper instance for the given URL, if implemented.
- */
-export function getScraper(html: string, url: string) {
+export function getScraper(url: string) {
   const hostName = getHostName(url)
 
   if (scrapers[hostName]) {
-    const ScraperClass = scrapers[hostName]
-    return new ScraperClass(html, url)
+    return scrapers[hostName]
   }
 
   throw new Error(

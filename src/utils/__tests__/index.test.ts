@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'bun:test'
 import {
+  getHostName,
   isDefined,
   isFunction,
   isNumber,
@@ -90,5 +91,38 @@ describe('isString', () => {
     expect(isString(null)).toBe(false)
     expect(isString(undefined)).toBe(false)
     expect(isString({})).toBe(false)
+  })
+})
+describe('getHostName', () => {
+  it('should return the host for a standard URL', () => {
+    expect(getHostName('https://www.example.com/path')).toBe('example.com')
+  })
+
+  it('should return the host for a URL with a subdomain', () => {
+    expect(getHostName('http://sub.domain.co.uk/page?q=1')).toBe(
+      'sub.domain.co.uk',
+    )
+  })
+
+  it('should return the host for a URL without a path', () => {
+    expect(getHostName('https://anothersite.org')).toBe('anothersite.org')
+  })
+
+  it('should throw an error for an invalid URL string', () => {
+    const invalidUrl = 'not a url'
+    expect(() => getHostName(invalidUrl)).toThrow(
+      new Error(`Invalid URL: ${invalidUrl}`),
+    )
+  })
+
+  it('should throw an error for an empty string', () => {
+    expect(() => getHostName('')).toThrow(new Error('Invalid URL: '))
+  })
+
+  it('should throw an error for a string that looks like a host but lacks a protocol', () => {
+    const urlWithoutProtocol = 'example.com'
+    expect(() => getHostName(urlWithoutProtocol)).toThrow(
+      new Error(`Invalid URL: ${urlWithoutProtocol}`),
+    )
   })
 })

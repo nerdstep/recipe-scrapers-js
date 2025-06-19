@@ -26,11 +26,13 @@ export function isString(value: unknown): value is string {
 }
 
 /**
- * Extracts the host name from a URL string.
+ * Extracts the host name from a URL string
+ * and removes 'www.' prefix if present.
+ * Throws an error if the input is not a valid URL.
  */
 export function getHostName(value: string) {
   try {
-    const url = new URL(value)
+    const url = new URL(value.replace('www.', ''))
     return url.host
   } catch {
     throw new Error(`Invalid URL: ${value}`)

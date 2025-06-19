@@ -69,6 +69,7 @@ export class HtmlStripperPlugin extends PostProcessorPlugin {
     return html
       .replace(/<[^>]*>/g, '') // Remove HTML tags
       .replace(/&amp;/g, '&') // Decode common entities
+      .replace(/&nbsp;/g, ' ')
       .replace(/&lt;/g, '<')
       .replace(/&gt;/g, '>')
       .replace(/&quot;/g, '"')

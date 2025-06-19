@@ -20,6 +20,9 @@ describe('HtmlStripperPlugin', () => {
     expect(plugin.process('title', '<span>Test &lt;tag&gt;</span>')).toBe(
       'Test <tag>',
     )
+    expect(plugin.process('description', '<span>Hello&nbsp;World</span>')).toBe(
+      'Hello World',
+    )
   })
 
   it('strips HTML from instructions Set<string>', () => {

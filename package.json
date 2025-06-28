@@ -1,6 +1,6 @@
 {
   "name": "recipe-scrapers-js",
-  "version": "0.1.0-alpha.4",
+  "version": "0.1.0-alpha.5",
   "license": "MIT",
   "description": "A recipe scrapers library",
   "author": {
@@ -12,11 +12,21 @@
     "url": "git+https://github.com/nerdstep/recipe-scrapers-js.git"
   },
   "type": "module",
-  "module": "src/index.ts",
+  "module": "dist/index.js",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "files": ["dist", "src", "README.md", "LICENSE"],
-  "keywords": ["recipe", "scraper", "parser", "food", "cooking"],
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "keywords": [
+    "recipe",
+    "scraper",
+    "parser",
+    "food",
+    "cooking"
+  ],
   "scripts": {
     "build": "tsdown src/index.ts --outdir dist",
     "test": "bun test",
@@ -29,17 +39,17 @@
     "prepublishOnly": "bun run lint && bun run build"
   },
   "peerDependencies": {
-    "cheerio": "^1.0.0"
+    "cheerio": "^1.1.0"
   },
   "dependencies": {
     "iso8601-duration": "^2.1.2",
     "schema-dts": "^1.1.5"
   },
   "devDependencies": {
-    "@biomejs/biome": "^1.9.4",
-    "@types/bun": "^1.2.15",
-    "cheerio": "^1.0.0",
-    "tsdown": "^0.12.7",
+    "@biomejs/biome": "^2.0.6",
+    "@types/bun": "^1.2.17",
+    "cheerio": "^1.1.0",
+    "tsdown": "^0.12.9",
     "typescript": "^5.8.3"
   }
 }

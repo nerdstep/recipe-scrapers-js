@@ -4,7 +4,7 @@ import {
   ExtractionFailedException,
   ExtractorNotFoundException,
 } from './exceptions'
-import { type LogLevel, Logger } from './logger'
+import { Logger, type LogLevel } from './logger'
 import type { RecipeFields } from './types/recipe.interface'
 import { isDefined } from './utils'
 

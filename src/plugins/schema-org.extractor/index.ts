@@ -1,17 +1,17 @@
+import type { CheerioAPI } from 'cheerio'
+import type { AggregateRating } from 'schema-dts'
 import { ExtractorPlugin } from '@/abstract-extractor-plugin'
 import {
   ExtractionFailedException,
   UnsupportedFieldException,
 } from '@/exceptions'
-import { type LogLevel, Logger } from '@/logger'
+import { Logger, type LogLevel } from '@/logger'
 import type { RecipeFields } from '@/types/recipe.interface'
 import { isFunction, isNumber, isPlainObject, isString } from '@/utils'
 import { splitInstructions } from '@/utils/instructions'
 import { extractRecipeMicrodata } from '@/utils/microdata'
 import { parseYields } from '@/utils/parse-yields'
 import { normalizeString, parseMinutes, splitToList } from '@/utils/parsing'
-import type { CheerioAPI } from 'cheerio'
-import type { AggregateRating } from 'schema-dts'
 import type {
   Person,
   SchemaOrgData,
@@ -156,7 +156,7 @@ export class SchemaOrgPlugin extends ExtractorPlugin {
     value: unknown,
     props: string[] = ['textValue', 'name', 'title', '@id'],
   ): string {
-    let text = undefined
+    let text: string | undefined
 
     if (isString(value)) {
       text = value

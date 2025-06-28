@@ -1,3 +1,4 @@
+import type { CheerioAPI } from 'cheerio'
 import type {
   IngredientGroup,
   Ingredients,
@@ -5,7 +6,6 @@ import type {
   List,
   RecipeObject,
 } from '@/types/recipe.interface'
-import type { CheerioAPI } from 'cheerio'
 import { isString } from '.'
 import { normalizeString } from './parsing'
 

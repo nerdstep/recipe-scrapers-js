@@ -1,9 +1,9 @@
 import { beforeEach, describe, expect, it } from 'bun:test'
+import { load } from 'cheerio'
 import {
   NotImplementedException,
   UnsupportedFieldException,
 } from '@/exceptions'
-import { load } from 'cheerio'
 import { ExtractorPlugin } from '../abstract-extractor-plugin'
 import type { RecipeFields } from '../types/recipe.interface'
 
@@ -94,7 +94,7 @@ class ThrowingExtractorPlugin extends ExtractorPlugin {
     super($)
   }
 
-  supports(field: keyof RecipeFields): boolean {
+  supports(_field: keyof RecipeFields): boolean {
     return true
   }
 

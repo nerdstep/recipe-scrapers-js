@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from 'bun:test'
+import { load } from 'cheerio'
 import { ExtractorNotFoundException } from '@/exceptions'
 import type { RecipeFields } from '@/types/recipe.interface'
-import { load } from 'cheerio'
 import { OpenGraphException, OpenGraphPlugin } from '../opengraph.extractor'
 
 describe('OpenGraphPlugin', () => {

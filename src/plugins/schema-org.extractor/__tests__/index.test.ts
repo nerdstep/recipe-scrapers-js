@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'bun:test'
+import { load } from 'cheerio'
 import {
   ExtractionFailedException,
   UnsupportedFieldException,
 } from '@/exceptions'
 import type { RecipeFields } from '@/types/recipe.interface'
 import { isList } from '@/utils/ingredients'
-import { load } from 'cheerio'
 import { SchemaOrgException, SchemaOrgPlugin } from '../index'
 
 const minimalJsonLd = `

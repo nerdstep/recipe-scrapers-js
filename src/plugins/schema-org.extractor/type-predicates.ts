@@ -1,4 +1,3 @@
-import { isPlainObject, isString } from '@/utils'
 import type {
   AggregateRating,
   HowToSection,
@@ -8,6 +7,7 @@ import type {
   WebPage,
   WebSite,
 } from 'schema-dts'
+import { isPlainObject, isString } from '@/utils'
 import type { Graph, Person, Recipe, Thing } from './schema-org.interface'
 
 export function hasId(obj: Thing): obj is Thing & { '@id': string } {

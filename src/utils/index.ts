@@ -2,7 +2,7 @@ export function isDefined<T>(value: T | undefined): value is T {
   return value !== undefined
 }
 
-// biome-ignore lint/complexity/noBannedTypes: <explanation>
+// biome-ignore lint/complexity/noBannedTypes: allowed here
 export function isFunction(value: unknown): value is Function {
   return typeof value === 'function'
 }

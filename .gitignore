@@ -1,9 +1,5 @@
 # Based on https://raw.githubusercontent.com/github/gitignore/main/Node.gitignore
 
-# Project specific
-test-data/*
-!test-data/.gitkeep
-
 # Logs
 
 logs

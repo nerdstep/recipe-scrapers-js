@@ -39,7 +39,8 @@
     "prepublishOnly": "bun run lint && bun run build"
   },
   "peerDependencies": {
-    "cheerio": "^1.1.0"
+    "cheerio": "^1.1.0",
+    "zod": "^3.25.74"
   },
   "dependencies": {
     "iso8601-duration": "^2.1.2",

@@ -9,7 +9,7 @@ import type {
 import { isString } from '.'
 import { normalizeString } from './parsing'
 
-const DEFAULT_GROUP_NAME = 'Ingredients'
+export const DEFAULT_INGREDIENTS_GROUP_NAME = 'Ingredients'
 
 const DEFAULT_GROUPING_SELECTORS = {
   wprm: {
@@ -186,7 +186,7 @@ export function groupIngredients(
     if ($el.is(groupNameSelector)) {
       // it's a heading
       const headingText = normalizeString($el.text())
-      currentHeading = headingText || DEFAULT_GROUP_NAME
+      currentHeading = headingText || DEFAULT_INGREDIENTS_GROUP_NAME
 
       if (!groupings.has(currentHeading)) {
         groupings.set(currentHeading, new Set())
@@ -198,7 +198,7 @@ export function groupIngredients(
       if (!text) continue
 
       const matched = bestMatch(text, ingredients)
-      const heading = currentHeading || DEFAULT_GROUP_NAME
+      const heading = currentHeading || DEFAULT_INGREDIENTS_GROUP_NAME
 
       if (!groupings.has(heading)) {
         groupings.set(heading, new Set())

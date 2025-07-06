@@ -19,14 +19,16 @@ A TypeScript/JavaScript library for scraping recipe data from various cooking we
 
 ## Installation
 
+Add the `recipe-scrapers-js` package and its peer dependencies.
+
 ```bash
-npm install recipe-scrapers-js
+npm install recipe-scrapers-js cheerio zod
 # or
-yarn add recipe-scrapers-js
+yarn add recipe-scrapers-js cheerio zod
 # or
-pnpm add recipe-scrapers-js
+pnpm add recipe-scrapers-js cheerio zod
 # or
-bun add recipe-scrapers-js
+bun add recipe-scrapers-js cheerio zod
 ```
 
 ## Usage
@@ -195,6 +197,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - Original [recipe-scrapers](https://github.com/hhursev/recipe-scrapers) Python library by [hhursev](https://github.com/hhursev)
 - [Schema.org Recipe specification](https://schema.org/Recipe)
 - [Cheerio](https://cheerio.js.org/) for HTML parsing
+- [Zod](https://zod.dev/) for schema validation
 
 ## Copyright and Usage
 

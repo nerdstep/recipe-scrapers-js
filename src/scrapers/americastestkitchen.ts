@@ -47,6 +47,13 @@ const recipeDataSchema = z.object({
   ingredientGroups: z.array(recipeIngredientGroupSchema),
   headnote: z.string().optional(),
   instructions: z.array(recipeInstructionSchema),
+  metaData: z.object({
+    fields: z.object({
+      photo: z.object({
+        url: z.url(),
+      }),
+    }),
+  }),
 })
 
 type RecipeData = z.infer<typeof recipeDataSchema>
@@ -67,6 +74,7 @@ export class AmericasTestKitchen extends AbstractScraper {
   }
 
   extractors = {
+    image: this.image.bind(this),
     ingredients: this.ingredients.bind(this),
     instructions: this.instructions.bind(this),
     siteName: this.siteName.bind(this),
@@ -74,6 +82,21 @@ export class AmericasTestKitchen extends AbstractScraper {
 
   protected siteName(): RecipeFields['siteName'] {
     return "America's Test Kitchen"
+  }
+
+  protected image(
+    prevValue: RecipeFields['image'] | undefined,
+  ): RecipeFields['image'] {
+    const data = this.getRecipeData()
+
+    if (!data) {
+      if (prevValue) {
+        return prevValue
+      }
+      throw new Error('Failed to extract image')
+    }
+
+    return data.metaData.fields.photo.url
   }
 
   protected ingredients(
